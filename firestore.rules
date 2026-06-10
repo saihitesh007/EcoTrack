@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    function isValidActivity() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['category', 'co2kg', 'timestamp', 'date'])
+        && data.co2kg is number
+        && data.co2kg >= 0
+        && data.co2kg <= 10000
+        && data.category is string
+        && data.category in ['transport', 'food', 'energy', 'water', 'shopping'];
+    }
+
+    function isValidProfile() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['currentStreak', 'longestStreak'])
+        && data.currentStreak is number
+        && data.currentStreak >= 0
+        && data.longestStreak is number
+        && data.longestStreak >= 0;
+    }
+
+    // User data - strict ownership
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+
+      match /activities/{activityId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && isValidActivity();
+        allow update: if isOwner(uid) && isValidActivity();
+        allow delete: if isOwner(uid);
+      }
+
+      match /profile/{document=**} {
+        allow read: if isOwner(uid);
+        allow write: if isOwner(uid);
+      }
+
+      match /insights/{insightId} {
+        allow read: if isOwner(uid);
+        allow write: if isOwner(uid);
+      }
+
+      match /challenges/{challengeId} {
+        allow read: if isOwner(uid);
+        allow write: if isOwner(uid);
+      }
+    }
+
+    // Leaderboard - read by all authenticated, write only own entry
+    match /leaderboard/{uid} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(uid);
+    }
+  }
+}
