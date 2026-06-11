@@ -7,6 +7,7 @@ import {
   Lightbulb,
   History,
   Trophy,
+  BookOpen,
   LogOut,
   Leaf,
   Menu,
@@ -22,6 +23,7 @@ const navItems = [
   { to: '/insights', label: 'AI Insights', icon: Lightbulb },
   { to: '/history', label: 'History', icon: History },
   { to: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+  { to: '/learn', label: 'Learn', icon: BookOpen },
 ];
 
 function Navbar() {

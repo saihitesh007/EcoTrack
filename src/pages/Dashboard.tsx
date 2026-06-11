@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, Flame, Trophy, Leaf, Target } from 'lucide-react';
+import { Activity, Flame, Trophy, Leaf, Target, Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useActivities } from '../hooks/useActivities';
@@ -19,6 +19,10 @@ import { formatKg } from '../utils/formatters';
 import { INDIA_WEEKLY_AVERAGE_KG, WORLD_WEEKLY_AVERAGE_KG } from '../constants/emissions';
 import { DEMO_ACTIVITIES } from '../constants/rawData';
 import { getGrade, calculateTreesNeeded, calculateVsAverage } from '../utils/sustainabilityScore';
+import SmartActionCards from '../components/SmartActionCards';
+import ReductionJourney from '../components/ReductionJourney';
+import DailyTip from '../components/DailyTip';
+import { getTodayString } from '../utils/formatters';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -74,6 +78,23 @@ export default function Dashboard() {
   const grade = getGrade(score);
   const indiaCompare = calculateVsAverage(chartStats.totalKg, INDIA_WEEKLY_AVERAGE_KG);
   const treesNeeded = calculateTreesNeeded(chartStats.totalKg);
+  const today = getTodayString();
+  const loggedToday = activities30Days.some(activity => activity.date === today);
+  const highestCategory = Object.entries(weeklyStats.byCategory).sort(([, left], [, right]) => right - left)[0]?.[0] as string | undefined;
+  const currentMonthKg = activities30Days
+    .filter(activity => activity.date.startsWith(today.slice(0, 7)))
+    .reduce((sum, activity) => sum + activity.co2kg, 0);
+  const previousMonthDate = new Date();
+  previousMonthDate.setMonth(previousMonthDate.getMonth() - 1);
+  const previousMonthKey = previousMonthDate.toISOString().slice(0, 7);
+  const previousMonthKg = activities30Days
+    .filter(activity => activity.date.startsWith(previousMonthKey))
+    .reduce((sum, activity) => sum + activity.co2kg, 0);
+  const dailyTip = highestCategory === 'food'
+    ? 'Try one plant-based meal today. Small swaps in food can create quick wins.'
+    : highestCategory === 'energy'
+      ? 'Turn off unused devices earlier tonight to reduce wasted electricity.'
+      : 'Use the bus, walk, or cycle for one short trip today to lower transport emissions.';
 
   return (
     <ErrorBoundary>
@@ -92,6 +113,21 @@ export default function Dashboard() {
               : 'Here is your carbon footprint summary for this week.'}
           </p>
         </header>
+
+        {!loggedToday && (
+          <div className="rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <Bell className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+              <div>
+                <p className="font-semibold text-amber-900 dark:text-amber-100">You haven&apos;t logged today&apos;s activities yet!</p>
+                <p className="text-sm text-amber-800 dark:text-amber-200">A quick log keeps your tracking streak accurate and useful.</p>
+              </div>
+            </div>
+            <button onClick={() => navigate('/log')} className="btn-secondary">
+              Log Now
+            </button>
+          </div>
+        )}
 
         {/* Debug: Show raw data */}
         {import.meta.env.DEV && (
@@ -123,7 +159,7 @@ export default function Dashboard() {
             <p className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Get started with your first activity</p>
             <button
               type="button"
-              onClick={() => navigate('/log-activity')}
+              onClick={() => navigate('/log')}
               className="btn-primary inline-flex items-center justify-center px-6 py-3 text-base font-semibold"
             >
               Log Your First Activity
@@ -173,6 +209,12 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
+            <DailyTip tip={dailyTip} />
+            <ReductionJourney
+              currentMonthKg={currentMonthKg || chartStats.totalKg}
+              previousMonthKg={previousMonthKg || chartStats.totalKg + 8}
+            />
+
             <div className="card p-5 sm:p-6">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Weekly Emissions Trend</h2>
                 {isLoading && !isTimedOut ? (
@@ -206,6 +248,11 @@ export default function Dashboard() {
           </div>
 
           <div className="space-y-6">
+            <SmartActionCards
+              highestCategory={(highestCategory as 'transport' | 'food' | 'energy' | 'water' | 'shopping') ?? 'transport'}
+              onDone={() => navigate('/log')}
+            />
+
             {insights?.goal && (
               <div className="card p-5 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-100 dark:border-green-800/50">
                 <h2 className="text-lg font-bold text-green-900 dark:text-green-100 mb-2 flex items-center gap-2">

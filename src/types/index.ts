@@ -65,6 +65,11 @@ export interface UserProfile {
   displayName: string;
   email: string;
   photoURL: string | null;
+  onboardingCompleted?: boolean;
+  baselineFootprintKg?: number;
+  onboardingAnswers?: Record<string, string>;
+  activeGoal?: string | null;
+  emailSummaryEnabled?: boolean;
   currentStreak: number;
   longestStreak: number;
   lastLoggedDate: string | null; // YYYY-MM-DD

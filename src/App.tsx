@@ -1,12 +1,16 @@
 import { Suspense, lazy, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import Navbar from './components/Navbar';
 import SkeletonCard from './components/SkeletonCard';
 import ErrorBoundary from './components/ErrorBoundary';
+import QuickLogFAB from './components/QuickLogFAB';
 
 // Lazy-load all page components for code splitting
 const AuthPage = lazy(() => import('./pages/AuthPage'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
+const LearnPage = lazy(() => import('./pages/LearnPage'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const LogActivity = lazy(() => import('./pages/LogActivity'));
 const Insights = lazy(() => import('./pages/Insights'));
@@ -46,7 +50,9 @@ function AuthRoute({ children }: ProtectedRouteProps) {
 }
 
 function AppContent() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // Dark mode init
   useEffect(() => {
@@ -58,6 +64,17 @@ function AppContent() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!user) return;
+    if (profile && !profile.onboardingCompleted && location.pathname !== '/onboarding') {
+      navigate('/onboarding', { replace: true });
+      return;
+    }
+    if (profile?.onboardingCompleted && location.pathname === '/') {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, profile, location.pathname, navigate]);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
       {/* Skip to main content — accessibility */}
@@ -66,11 +83,22 @@ function AppContent() {
       </a>
 
       {user && <Navbar />}
+      {user && <QuickLogFAB />}
 
       <main id="main-content" tabIndex={-1} className="outline-none">
         <ErrorBoundary>
           <Suspense fallback={<PageLoader />}>
             <Routes>
+              <Route
+                path="/"
+                element={
+                  user ? (
+                    <Navigate to={profile?.onboardingCompleted ? '/dashboard' : '/onboarding'} replace />
+                  ) : (
+                    <LandingPage />
+                  )
+                }
+              />
             <Route
               path="/auth"
               element={
@@ -78,6 +106,18 @@ function AppContent() {
                   <AuthPage />
                 </AuthRoute>
               }
+            />
+            <Route
+              path="/onboarding"
+              element={
+                <ProtectedRoute>
+                  <OnboardingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/learn"
+              element={<LearnPage />}
             />
             <Route
               path="/dashboard"
@@ -119,7 +159,6 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </Suspense>

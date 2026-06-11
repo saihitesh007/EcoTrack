@@ -39,6 +39,18 @@ EcoTrack is a comprehensive, production-ready web application built for the Goog
 
 ---
 
+## Problem Statement Alignment
+
+| Problem Statement Keyword | EcoTrack Feature |
+|---|---|
+| Understand | Landing page, onboarding quiz, learn page, education tooltips |
+| Track | Daily reminder banner, activity logging, carbon calendar, history table |
+| Reduce | Reduction journey, smart action cards, weekly comparison, offset suggestions |
+| Simple Actions | QuickLog FAB, smart defaults, one-click activity logging |
+| Personalized Insights | Gemini tips, daily tip card, AI insights history, smart goals |
+
+---
+
 ## 🛠️ Google Services Used
 
 EcoTrack heavily relies on Google Cloud and Firebase ecosystem to deliver a seamless, scalable experience:

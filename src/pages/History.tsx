@@ -8,6 +8,7 @@ import { generateMonthlyReport } from '../services/pdfService';
 import ActivityRow from '../components/ActivityRow';
 import EmptyState from '../components/EmptyState';
 import Toast, { useToast } from '../components/Toast';
+import CarbonCalendar from '../components/CarbonCalendar';
 import { ACTIVITY_CATEGORIES, CATEGORY_LABELS } from '../constants/emissions';
 import type { ActivityCategory, Activity } from '../types';
 import { activitiesToCSV, getTodayString } from '../utils/formatters';
@@ -163,6 +164,10 @@ export default function History() {
       </header>
 
       <div className="card overflow-hidden">
+        <div className="p-4 border-b border-gray-100 dark:border-gray-800">
+          <CarbonCalendar activities={activities30Days} />
+        </div>
+
         {/* Filters */}
         <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
