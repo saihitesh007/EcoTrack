@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { RefreshCw, Lightbulb, Clock, CheckCircle, Recycle, Truck, Salad } from 'lucide-react';
+import { RefreshCw, Lightbulb, Clock, CheckCircle, Recycle, Truck } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useActivities } from '../hooks/useActivities';
 import { useInsights } from '../hooks/useInsights';
@@ -46,12 +46,6 @@ export default function Insights() {
         description: 'Walk, cycle, or use public transport for short daily trips to cut transport emissions fast.',
         icon: Truck,
         accent: 'from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/20',
-      },
-      {
-        title: 'Choose more plant-based meals',
-        description: 'Swapping one meat-heavy meal for a plant-based option can noticeably reduce your weekly footprint.',
-        icon: Salad,
-        accent: 'from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20',
       },
       {
         title: 'Save electricity at home',
@@ -110,7 +104,7 @@ export default function Insights() {
               Quick wins
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {quickTips.map(tip => {
               const Icon = tip.icon;
               return (
