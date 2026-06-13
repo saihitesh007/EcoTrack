@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import LogActivity from '../pages/LogActivity';
 import * as useActivitiesHook from '../hooks/useActivities';
 import * as useAuthHook from '../hooks/useAuth';
@@ -29,13 +30,13 @@ describe('ActivityForm (LogActivity)', () => {
   });
 
   it('renders transport form by default', () => {
-    render(<LogActivity />);
+    render(<MemoryRouter><LogActivity /></MemoryRouter>);
     expect(screen.getByLabelText(/Vehicle Type/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Distance \(km\)/i)).toBeInTheDocument();
   });
 
   it('switches tabs correctly', async () => {
-    render(<LogActivity />);
+    render(<MemoryRouter><LogActivity /></MemoryRouter>);
     const user = userEvent.setup();
     
     await user.click(screen.getByRole('tab', { name: /Food/i }));
@@ -44,7 +45,7 @@ describe('ActivityForm (LogActivity)', () => {
   });
 
   it('rejects empty required fields on submit', async () => {
-    render(<LogActivity />);
+    render(<MemoryRouter><LogActivity /></MemoryRouter>);
     const user = userEvent.setup();
     
     // Clear the required distance field (it's empty by default)
@@ -55,7 +56,7 @@ describe('ActivityForm (LogActivity)', () => {
   });
 
   it('submits form and calls calculator with correct args', async () => {
-    render(<LogActivity />);
+    render(<MemoryRouter><LogActivity /></MemoryRouter>);
     const user = userEvent.setup();
     
     await user.type(screen.getByLabelText(/Distance \(km\)/i), '10');

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useInRouterContext, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Bus, Utensils, Zap, Droplets, ShoppingBag, MapPin, Save } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useActivities } from '../hooks/useActivities';
@@ -37,8 +37,7 @@ const toFoodType = (value: string) => value as FoodType;
 const toShoppingCategory = (value: string) => value as ShoppingCategory;
 
 export default function LogActivity() {
-  const inRouter = useInRouterContext();
-  const navigate = inRouter ? useNavigate() : () => {};
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { weeklyStats, addActivity, isAddingActivity } = useActivities(user?.uid ?? null);
   const { updateStreak } = useStreak(user?.uid ?? null);

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import Dashboard from '../pages/Dashboard';
 import * as useAuthHook from '../hooks/useAuth';
 import * as useActivitiesHook from '../hooks/useActivities';
@@ -42,12 +43,12 @@ describe('Dashboard', () => {
   });
 
   it('renders user name', () => {
-    render(<Dashboard />);
+    render(<MemoryRouter><Dashboard /></MemoryRouter>);
     expect(screen.getByText(/Hello, Test/i)).toBeInTheDocument();
   });
 
   it('renders stat cards with correct values', () => {
-    render(<Dashboard />);
+    render(<MemoryRouter><Dashboard /></MemoryRouter>);
     // total
     expect(screen.getByText('50 kg')).toBeInTheDocument();
     // streak
@@ -57,7 +58,7 @@ describe('Dashboard', () => {
   });
 
   it('shows comparison percentages', () => {
-    render(<Dashboard />);
+    render(<MemoryRouter><Dashboard /></MemoryRouter>);
     // 50kg vs 80.7kg india avg is ~38% better
     expect(screen.getByText(/38% better than avg/i)).toBeInTheDocument();
   });
@@ -67,7 +68,7 @@ describe('Dashboard', () => {
       weeklyStats: { totalKg: 0, byCategory: {}, dailyTotals: [] },
       isLoading: true
     });
-    const { container } = render(<Dashboard />);
+    const { container } = render(<MemoryRouter><Dashboard /></MemoryRouter>);
     // Look for skeleton class
     expect(container.querySelector('.skeleton')).toBeInTheDocument();
   });
