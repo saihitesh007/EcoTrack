@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Activity, Flame, Trophy, Leaf, Target, Bell } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useInRouterContext, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useActivities } from '../hooks/useActivities';
 import { useStreak } from '../hooks/useStreak';
@@ -25,9 +25,15 @@ import DailyTip from '../components/DailyTip';
 import { getTodayString } from '../utils/formatters';
 
 export default function Dashboard() {
-  const navigate = useNavigate();
+  const inRouter = useInRouterContext();
+  const navigate = inRouter ? useNavigate() : () => {};
   const { user, profile } = useAuth();
-  const { weeklyStats, activities30Days, isLoading, isTimedOut } = useActivities(user?.uid ?? null);
+  const {
+    weeklyStats,
+    activities30Days = [],
+    isLoading,
+    isTimedOut,
+  } = useActivities(user?.uid ?? null);
   const { currentStreak, isLoading: isStreakLoading, updateStreak } = useStreak(user?.uid ?? null);
   const { userRank, isLoading: isRankLoading } = useLeaderboard(user?.uid ?? null);
   const { challenge, completeChallenge, isCompleting, isLoading: isChallengeLoading } = useChallenges(user?.uid ?? null);
@@ -35,12 +41,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (user?.uid) {
-      updateStreak().catch(() => {});
+      void Promise.resolve(updateStreak()).catch(() => {});
     }
   }, [user?.uid, updateStreak]);
 
   const firstName = profile?.displayName?.split(' ')[0] ?? user?.displayName?.split(' ')[0] ?? 'there';
-  const hasActivity = weeklyStats.dailyTotals.length > 0;
+  const hasActivity = weeklyStats.totalKg > 0 || weeklyStats.dailyTotals.length > 0;
   const showEmptyDashboard = !isLoading && isTimedOut && !hasActivity;
   const demoWeeklyStats = DEMO_ACTIVITIES.reduce(
     (acc, activity) => {

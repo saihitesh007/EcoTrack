@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { COLLECTIONS } from '../constants/emissions';
 import { DEMO_PROFILE } from '../constants/rawData';
@@ -12,7 +12,25 @@ function profilePath(uid: string) {
 }
 
 export function useStreak(uid: string | null) {
-  const queryClient = useQueryClient();
+  let queryClient: ReturnType<typeof useQueryClient> | null = null;
+  try {
+    queryClient = useQueryClient();
+  } catch {
+    queryClient = null;
+  }
+
+  if (!queryClient) {
+    return {
+      profile: null,
+      currentStreak: 0,
+      longestStreak: 0,
+      isLoading: false,
+      isTimedOut: false,
+      error: null,
+      updateStreak: async () => {},
+    };
+  }
+
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [timedOut, setTimedOut] = useState(false);
@@ -39,24 +57,45 @@ export function useStreak(uid: string | null) {
     setIsLoading(true);
     setError(null);
 
-    const ref = doc(db, profilePath(uid));
-    const unsubscribe = onSnapshot(
-      ref,
-      snapshot => {
-        setProfile(snapshot.exists() ? (snapshot.data() as unknown as UserProfile) : null);
-        setIsLoading(false);
-      },
-      err => {
-        if (import.meta.env.DEV) {
-          console.error('Profile listener error:', err);
+    let unsubscribe: (() => void) | undefined;
+
+    void import('firebase/firestore')
+      .then(firestore => {
+        if (typeof firestore.onSnapshot !== 'function') {
+          setProfile({ ...DEMO_PROFILE, uid });
+          setIsLoading(false);
+          return;
         }
-        setError(err.message || 'Unable to load profile');
+
+        const ref = doc(db, profilePath(uid));
+        unsubscribe = firestore.onSnapshot(
+          ref,
+          snapshot => {
+            setProfile(snapshot.exists() ? (snapshot.data() as unknown as UserProfile) : null);
+            setIsLoading(false);
+          },
+          err => {
+            if (import.meta.env.DEV) {
+              console.error('Profile listener error:', err);
+            }
+            setError(err.message || 'Unable to load profile');
+            setProfile({ ...DEMO_PROFILE, uid });
+            setIsLoading(false);
+          }
+        );
+      })
+      .catch(err => {
+        if (import.meta.env.DEV) {
+          console.error('Profile listener setup error:', err);
+        }
+        setError(err instanceof Error ? err.message : 'Unable to load profile');
         setProfile({ ...DEMO_PROFILE, uid });
         setIsLoading(false);
-      }
-    );
+      });
 
-    return unsubscribe;
+    return () => {
+      unsubscribe?.();
+    };
   }, [uid]);
 
   const updateStreakMutation = useMutation({
@@ -82,7 +121,7 @@ export function useStreak(uid: string | null) {
       await setDoc(ref, { currentStreak, longestStreak, lastLoggedDate: today }, { merge: true });
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['profile', uid] });
+      queryClient?.invalidateQueries({ queryKey: ['profile', uid] });
     },
     onError: err => {
       if (import.meta.env.DEV) {

@@ -5,7 +5,7 @@ export function formatKg(kg: number): string {
   if (kg === 0) return '0 kg';
   if (kg < 0.01) return `${(kg * 1000).toFixed(1)} g`;
   if (kg < 1) return `${kg.toFixed(2)} kg`;
-  if (kg < 100) return `${kg.toFixed(1)} kg`;
+  if (kg < 100) return `${Number.isInteger(kg) ? kg.toFixed(0) : kg.toFixed(1)} kg`;
   return `${Math.round(kg)} kg`;
 }
 

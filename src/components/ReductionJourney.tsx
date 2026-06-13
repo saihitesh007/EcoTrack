@@ -29,11 +29,11 @@ function ReductionJourney({ joinedAtMonth = '2026-01', currentMonthKg, previousM
       <div className="grid sm:grid-cols-3 gap-3">
         <div className="rounded-2xl bg-gray-50 dark:bg-gray-900/60 p-4">
           <p className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">Previous month</p>
-          <p className="mt-1 text-2xl font-black text-gray-900 dark:text-white">{formatKg(previousMonthKg)}</p>
+          <p className="mt-1 text-2xl font-black text-gray-900 dark:text-white">{formatKg(previousMonthKg)} CO₂</p>
         </div>
         <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 p-4">
           <p className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">Current month</p>
-          <p className="mt-1 text-2xl font-black text-emerald-700 dark:text-emerald-300">{formatKg(currentMonthKg)}</p>
+          <p className="mt-1 text-2xl font-black text-emerald-700 dark:text-emerald-300">{formatKg(currentMonthKg)} CO₂</p>
         </div>
         <div className="rounded-2xl bg-blue-50 dark:bg-blue-900/20 p-4">
           <p className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">Change</p>

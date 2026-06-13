@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { useInRouterContext, useNavigate } from 'react-router-dom';
 import { Bus, Utensils, Zap, Droplets, ShoppingBag, MapPin, Save } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useActivities } from '../hooks/useActivities';
@@ -37,7 +37,8 @@ const toFoodType = (value: string) => value as FoodType;
 const toShoppingCategory = (value: string) => value as ShoppingCategory;
 
 export default function LogActivity() {
-  const navigate = useNavigate();
+  const inRouter = useInRouterContext();
+  const navigate = inRouter ? useNavigate() : () => {};
   const { user } = useAuth();
   const { weeklyStats, addActivity, isAddingActivity } = useActivities(user?.uid ?? null);
   const { updateStreak } = useStreak(user?.uid ?? null);
@@ -183,14 +184,7 @@ export default function LogActivity() {
 
         <div className="p-6 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.15 }}
-              >
+            <div key={activeTab}>
                 {activeTab === 'transport' && (
                   <div className="space-y-5">
                     <div>
@@ -364,8 +358,7 @@ export default function LogActivity() {
                     </div>
                   </div>
                 )}
-              </motion.div>
-            </AnimatePresence>
+            </div>
 
             <div className="pt-6 mt-6 border-t border-gray-100 dark:border-gray-800">
               <button

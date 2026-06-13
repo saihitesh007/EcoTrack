@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { collection, query, where, orderBy, onSnapshot, doc, setDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { COLLECTIONS } from '../constants/emissions';
@@ -23,6 +23,25 @@ function getAvatarColor(uid: string): string {
 }
 
 export function useLeaderboard(uid: string | null) {
+  let queryClient: ReturnType<typeof useQueryClient> | null = null;
+  try {
+    queryClient = useQueryClient();
+  } catch {
+    queryClient = null;
+  }
+
+  if (!queryClient) {
+    return {
+      entries: [...DEMO_LEADERBOARD].sort((left, right) => left.weeklyKg - right.weeklyKg),
+      userRank: uid ? DEMO_LEADERBOARD.find(row => row.uid === uid)?.rank ?? null : null,
+      currentUserEntry: uid ? DEMO_LEADERBOARD.find(row => row.uid === uid) ?? null : null,
+      isLoading: false,
+      isTimedOut: false,
+      error: null,
+      updateLeaderboard: async () => {},
+    };
+  }
+
   const weekId = getWeekId();
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [userRank, setUserRank] = useState<number | null>(null);
