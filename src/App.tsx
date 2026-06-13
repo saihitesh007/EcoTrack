@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import Navbar from './components/Navbar';
 import SkeletonCard from './components/SkeletonCard';
@@ -50,9 +50,7 @@ function AuthRoute({ children }: ProtectedRouteProps) {
 }
 
 function AppContent() {
-  const { user, profile } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
+  const { user } = useAuth();
 
   // Dark mode init
   useEffect(() => {
@@ -63,17 +61,6 @@ function AppContent() {
       document.documentElement.classList.add('dark');
     }
   }, []);
-
-  useEffect(() => {
-    if (!user) return;
-    if (profile && !profile.onboardingCompleted && location.pathname !== '/onboarding') {
-      navigate('/onboarding', { replace: true });
-      return;
-    }
-    if (profile?.onboardingCompleted && location.pathname === '/') {
-      navigate('/dashboard', { replace: true });
-    }
-  }, [user, profile, location.pathname, navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
@@ -93,7 +80,7 @@ function AppContent() {
                 path="/"
                 element={
                   user ? (
-                    <Navigate to={profile?.onboardingCompleted ? '/dashboard' : '/onboarding'} replace />
+                    <Navigate to="/dashboard" replace />
                   ) : (
                     <LandingPage />
                   )
